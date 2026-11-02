@@ -1,0 +1,46 @@
+name: ' Dev: TechHealth Infra Migration'
+
+on:
+    push:
+        branches:
+            - dev
+permissions:
+    id-token: write #required for Github OIDC
+
+jobs:
+    validate-stack:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            - name: Use Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: '22.x'
+            
+            - name: Install dependencies
+              run: npm install
+           
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  role-to-assume: arn:aws:iam::045283898962:role/TechHealthGithubActionsIAMRole
+                  aws-region: us-east-1
+
+            - name: Validate Stack
+              run: 
+                npm install -g aws-cdk
+                cdk synth TechHealthInfraMigrationStack
+                cdk validate TechHealthInfraMigrationStack
+
+            - name: Comment on PR
+              uses: actions/github-script@v7
+              with:
+                script: |
+                    github.rest.issues.createComment({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    body: 'CDK stack good to go, you can merge!'
+                    })

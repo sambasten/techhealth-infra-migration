@@ -1,4 +1,3 @@
-import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -8,19 +7,21 @@ export interface TechHealthEC2Props {
     vpc: ec2.Vpc;
 }
 export class TechHealthEC2 extends Construct {
+
+  public readonly ec2securityGroup: ec2.SecurityGroup;
+
   constructor(scope: Construct, id: string, props: TechHealthEC2Props) {
     super(scope, id);
 
 
     //Ec2Security Group
-    const ec2securityGroup = new ec2.SecurityGroup(this, 'MigrationSecurityGroup', {
+    this.ec2securityGroup = new ec2.SecurityGroup(this, 'MigrationSecurityGroup', {
         vpc: props.vpc,
         description: 'Allow SSH, HTTP and HTTPS traffic',
         allowAllOutbound: true
     });
-    ec2securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(22), 'SSH Access');
-    ec2securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'HTTP Access');
-    ec2securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443), 'HTTPS Access');
+    this.ec2securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'HTTP Access');
+    this.ec2securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443), 'HTTPS Access');
 
     //IAM role for EC2
     const ec2role = new iam.Role(this, 'ec2Role', {
@@ -36,8 +37,17 @@ export class TechHealthEC2 extends Construct {
         vpcSubnets: {
             subnetType: ec2.SubnetType.PUBLIC
         },
-       securityGroup: ec2securityGroup,
-        role: ec2role
-    })
+        securityGroup: this.ec2securityGroup,
+        role: ec2role,
+        // userData: ec2.UserData.forLinux(
+        //     {
+        //         shebang: '#!/bin/bash',
+        //     },
+        //     'yum install -y httpd',
+        //     'systemctl start httpd',
+        //     'systemctl enable httpd',
+        //     'echo "<h1>Welcome to TechHealth</h1>" > /var/www/html/index.html'
+        // ),
+    });
   }
 }

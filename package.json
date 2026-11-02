@@ -5,7 +5,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy-github-role": "cdk deploy --app 'npx tsx bin/techhealth-githubrole-migration.ts'"
   },
   "devDependencies": {
     "@swc/core": "^1.15.0",
