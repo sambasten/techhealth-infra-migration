@@ -15,7 +15,7 @@ export class TechHealthGithubActionsOIDCStack extends cdk.Stack {
                     'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
                 },
                 StringLike: {
-                    'token.actions.githubusercontent.com:sub': 'repo:sambasten@20877484/techhealth-infra-migration@1443247700/*',
+                    'token.actions.githubusercontent.com:sub': 'repo:sambasten@20877484/techhealth-infra-migration@1443247700',
                 }
             }
         ),
