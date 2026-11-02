@@ -30,7 +30,7 @@ jobs:
 
             - name: Validate Stack
               run: 
-                cdk synth TechHealthInfraMigrationStack
+                npx cdk synth TechHealthInfraMigrationStack
 
             - name: Comment on PR
               if: github.event_name == 'pull_request'
