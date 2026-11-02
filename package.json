@@ -6,8 +6,8 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "deploy-github-role-stack": "cdk deploy --app 'npx tsx bin/techhealth-githubrole-migration.ts'",
-    "destroy-github-role-stack": "cdk destroy --app 'npx tsx bin/techhealth-githubrole-migration.ts'"
+    "deploy-github-role-stack": "cdk deploy --app 'npx tsx bin/techhealth-githubrole-stack.ts'",
+    "destroy-github-role-stack": "cdk destroy --app 'npx tsx bin/techhealth-githubrole-stack.ts'"
   },
   "devDependencies": {
     "@swc/core": "^1.15.0",
