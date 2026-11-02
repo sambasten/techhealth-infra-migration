@@ -1,4 +1,4 @@
-name: ' Master: TechHealth Infra Migration '
+name: ' Master: TechHealth Infra Migration'
 
 on:
     push:
