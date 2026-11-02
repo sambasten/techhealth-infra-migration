@@ -6,6 +6,8 @@ on:
 
 permissions:
     id-token: write #required for Github OIDC
+    contents: read
+    pull-requests: write
 
 jobs:
     validate-stack:
