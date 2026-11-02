@@ -9,6 +9,7 @@ permissions:
 
 jobs:
     validate-stack:
+        if: github.event_name == 'pull_request'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -33,7 +34,6 @@ jobs:
                 npx cdk synth TechHealthInfraMigrationStack
 
             - name: Comment on PR
-              if: github.event_name == 'pull_request'
               uses: actions/github-script@v7
               with:
                 script: |
