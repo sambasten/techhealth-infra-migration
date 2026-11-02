@@ -1,6 +1,7 @@
 name: ' Dev: TechHealth Infra Migration'
 
 on:
+    pull_request:
     push:
         branches:
             - dev
