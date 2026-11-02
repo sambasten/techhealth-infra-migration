@@ -2,6 +2,7 @@ name: ' Dev: TechHealth Infra Migration'
 
 on:
     pull_request:
+        types: [opened, synchronize, closed]
         branches:
             - dev
 permissions:
