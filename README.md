@@ -147,6 +147,8 @@ npm run destroy-github-role-stack               # optional: removes the CI role
 ```
 The RDS instance uses `RemovalPolicy.DESTROY`, so destroy leaves nothing behind (no final snapshot). That's intended for this proof of concept, not for production data.
 
+After destroying, set the `DEPLOY_STACK` repository variable to `false` so later pushes to `master` don't recreate the stack. See [Pausing deployments](#pausing-deployments).
+
 ### Useful commands
 | Command | What it does |
 |---|---|
@@ -162,15 +164,32 @@ The RDS instance uses `RemovalPolicy.DESTROY`, so destroy leaves nothing behind 
 | Workflow | Trigger | What it does |
 |---|---|---|
 | `dev.yaml` | Pull request opened / updated | Installs deps, assumes the AWS role via OIDC, runs `cdk synth`, comments on the PR |
-| `master.yaml` | Push to `master`, or manual run | Assumes the AWS role via OIDC, runs `cdk deploy TechHealthInfraMigrationStack` |
+| `master.yaml` | Push to `master` (code changes only), or manual run | Runs only when `DEPLOY_STACK` is `true`. Assumes the AWS role via OIDC, runs `cdk deploy TechHealthInfraMigrationStack` |
 
 **How authentication works:** GitHub issues a short-lived OIDC token for each run. AWS trusts it only for this repository, and only for the `sts.amazonaws.com` audience. The job assumes `TechHealthGithubActionsIAMRole`, which can do one thing: assume the CDK bootstrap roles (`cdk-*`) that perform the deployment. No AWS access keys are stored in GitHub.
+
+### Pausing deployments
+
+This control stop a push to `master` from triggering stack deployment:
+
+| Control | Where | Effect |
+|---|---|---|
+| `DEPLOY_STACK` variable | GitHub → **Settings → Secrets and variables → Actions → Variables** | `true`: deploys run. `false` (or not set): the deploy job is skipped, for pushes and manual runs alike. |
+
+
+**Typical cycle:**
+1. Set `DEPLOY_STACK = true` → merge to `master` → stack deploys.
+2. Run `npx cdk destroy TechHealthInfraMigrationStack` → set `DEPLOY_STACK = false`.
+3. Keep pushing code and docs; nothing deploys.
+4. To bring it back, set `DEPLOY_STACK = true` and either push to `master` or click **Run workflow** on the Actions tab.
 
 ---
 
 ## Validation & Testing
 
 ### EC2 → RDS connectivity
+The MySQL client (`mariadb105`) is installed on first boot by `user-data.sh`.
+
 1. Connect to the instance with **Session Manager**: EC2 console → instance → **Connect** → **Session Manager**.
 2. Get the DB endpoint and password from **Secrets Manager** (the secret created by the RDS module: keys `host`, `username`, `password`).
 3. Connect:
@@ -240,8 +259,8 @@ The biggest cost lever is `cdk destroy` — the full environment can be torn dow
 - **Bootstrap resources need their own lifecycle.** The CI role can't be deployed by the pipeline that depends on it. Putting it in a separate entry point (`--app`) keeps the pipeline from ever touching it.
 - **Expose what other modules need.** Assigning the security group to a local `const` instead of `this.ec2securityGroup` left the RDS module with `undefined` and broke synth.
 - **Don't turn secrets into strings.** Calling `.toString()` on a `SecretValue` triggers CDK's `SecretValueExposureRisk` warning. `rds.Credentials.fromGeneratedSecret()` handles credentials correctly.
+- **Pushing to `master` shouldn't always mean deploying.** After a destroy, every push recreated the stack. A repository variable (`DEPLOY_STACK`) acts as an on/off switch, and `paths-ignore` stops documentation pushes from deploying at all.
 - **YAML multi-line commands need `|`.** Without it, separate `run:` lines are folded into one command.
-- **Use `npx cdk` in CI.** The CLI is a project dependency in `node_modules/.bin`, not on the runner's `PATH`.
 - **A `permissions:` block is an allow-list.** Anything not listed (like `pull-requests: write`) is denied.
 
 

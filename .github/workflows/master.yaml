@@ -5,11 +5,17 @@ on:
     push:
         branches:
             - master
+        paths-ignore:
+            - '**.md'
+            - 'docs/**'
+            - '*.png'
 permissions:
     id-token: write #required for Github OIDC
 
 jobs:
     deploy-stack:
+        #adding DEPLOY_STACK as a variable to control whether to deploy or not (true or false) Settings->Secrets&Variables->Actions->Variables
+        if: vars.DEPLOY_STACK == 'true'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
