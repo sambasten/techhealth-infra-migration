@@ -246,8 +246,6 @@ The biggest cost lever is `cdk destroy` — the full environment can be torn dow
 
 
 ## Future Improvements
-
-- Unit tests with `aws-cdk-lib/assertions` (e.g. assert RDS is not publicly accessible, SG rules are exact).
 - HTTPS with an Application Load Balancer and ACM certificate.
 - Multi-AZ RDS and an Auto Scaling group for the web tier.
 - CloudWatch alarms and RDS automated backups/snapshots for production use.
