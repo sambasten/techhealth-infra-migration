@@ -37,10 +37,5 @@ export class TechHealthInfraMigrationStack extends cdk.Stack {
     });
     cdk.Tags.of(rdsEC2).add('Name', 'Private RDS Database');
 
-    new cdk.CfnOutput(this, 'PublicEC2Url', {
-        value: publicEC2.outputEC2Url.value,
-        description: 'Public URL of the TechHealth EC2 web server',
-    })
-
   }
 }

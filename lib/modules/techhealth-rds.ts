@@ -20,16 +20,6 @@ export class TechHealthRDS extends Construct {
     });
     rdssecurityGroup.addIngressRule(props.ec2securityGroup, ec2.Port.tcp(3306), 'allow SQL access from ec2');
 
-
-    //secrets manager for RDS login
-    const rdsSecret = new secretsmanager.Secret(this, 'RdsSecret', {
-        generateSecretString: {
-            secretStringTemplate: JSON.stringify({ username: 'admin' }),
-            generateStringKey: 'superadminpassword',
-            excludeCharacters: '/@"',
-        }
-    })
-
     //attch RDS to private subnet
     const privateRDS = new rds.DatabaseInstance(this, 'MigrationDB', {
         vpc: props.vpc,
@@ -44,10 +34,7 @@ export class TechHealthRDS extends Construct {
         allocatedStorage: 20,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
         storageEncrypted: true,
-        credentials: {
-            username: rdsSecret.secretValueFromJson('username').toString(),
-            password: rdsSecret.secretValueFromJson('superadminpassword'),
-        }
+        credentials: rds.Credentials.fromGeneratedSecret('admin'),
     });
   }
 }
