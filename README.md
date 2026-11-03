@@ -46,7 +46,7 @@ Everything is now defined in code and deployed by CDK:
 
 ## Architecture
 
-![TechHealth VPC architecture](TeachHealthVPC.png)
+![TechHealth VPC architecture](TechHealthVPC.png)
 
 | Component | Placement | Details |
 |---|---|---|
