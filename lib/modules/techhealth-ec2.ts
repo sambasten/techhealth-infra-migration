@@ -1,6 +1,9 @@
+import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as fs from 'fs';
+import * as path from 'path';
 
 
 export interface TechHealthEC2Props {
@@ -9,10 +12,10 @@ export interface TechHealthEC2Props {
 export class TechHealthEC2 extends Construct {
 
   public readonly ec2securityGroup: ec2.SecurityGroup;
+  public readonly outputEC2Url: cdk.CfnOutput;
 
   constructor(scope: Construct, id: string, props: TechHealthEC2Props) {
     super(scope, id);
-
 
     //Ec2Security Group
     this.ec2securityGroup = new ec2.SecurityGroup(this, 'MigrationSecurityGroup', {
@@ -29,6 +32,10 @@ export class TechHealthEC2 extends Construct {
         });
     ec2role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
 
+    const userDataPath = fs.readFileSync(path.join(__dirname, '../bash-scripts/user-data.sh'), 'utf-8');
+    
+    //console.log(userDataPath);
+
     //attach EC2 to public subnet
     const publicEC2 = new ec2.Instance(this, 'PublicEC2', {
         vpc: props.vpc,
@@ -39,15 +46,13 @@ export class TechHealthEC2 extends Construct {
         },
         securityGroup: this.ec2securityGroup,
         role: ec2role,
-        // userData: ec2.UserData.forLinux(
-        //     {
-        //         shebang: '#!/bin/bash',
-        //     },
-        //     'yum install -y httpd',
-        //     'systemctl start httpd',
-        //     'systemctl enable httpd',
-        //     'echo "<h1>Welcome to TechHealth</h1>" > /var/www/html/index.html'
-        // ),
+        userData: ec2.UserData.custom(userDataPath)
+    });
+
+    //output the EC2 web server URL after deploy
+    this.outputEC2Url = new cdk.CfnOutput(this, 'PublicEC2Url', {
+        value: publicEC2.instancePublicDnsName,
+        description: 'Public URL of the TechHealth EC2 web server',
     });
   }
 }

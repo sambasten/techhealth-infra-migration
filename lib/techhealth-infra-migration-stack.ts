@@ -3,7 +3,6 @@ import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { TechHealthEC2 } from './modules/techhealth-ec2';
 import { TechHealthRDS } from './modules/techhealth-rds';
-import { TechHealthGithubActionsOIDCStack } from './techhealth-githubactions-stack';
 
 export class TechHealthInfraMigrationStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -37,6 +36,11 @@ export class TechHealthInfraMigrationStack extends cdk.Stack {
         ec2securityGroup: publicEC2.ec2securityGroup
     });
     cdk.Tags.of(rdsEC2).add('Name', 'Private RDS Database');
+
+    new cdk.CfnOutput(this, 'PublicEC2Url', {
+        value: publicEC2.outputEC2Url.value,
+        description: 'Public URL of the TechHealth EC2 web server',
+    })
 
   }
 }
