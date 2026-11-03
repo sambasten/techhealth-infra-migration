@@ -8,7 +8,7 @@ export class TechHealthInfraMigrationStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const vpc = new ec2.Vpc(this, 'MigrationVpc', {
+    const vpc = new ec2.Vpc(this, 'TechHealthVpc', {
         ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
         maxAzs: 2,
         subnetConfiguration: [
@@ -24,7 +24,7 @@ export class TechHealthInfraMigrationStack extends cdk.Stack {
             },
         ],
     });
-    cdk.Tags.of(vpc).add('Name', 'MigrationVpc');
+    cdk.Tags.of(vpc).add('Name', 'TechHealth New Vpc');
 
     const publicEC2 = new TechHealthEC2(this, 'TechHealthEC2', {
         vpc: vpc,
@@ -36,11 +36,6 @@ export class TechHealthInfraMigrationStack extends cdk.Stack {
         ec2securityGroup: publicEC2.ec2securityGroup
     });
     cdk.Tags.of(rdsEC2).add('Name', 'Private RDS Database');
-
-    new cdk.CfnOutput(this, 'PublicEC2Url', {
-        value: publicEC2.outputEC2Url.value,
-        description: 'Public URL of the TechHealth EC2 web server',
-    })
 
   }
 }

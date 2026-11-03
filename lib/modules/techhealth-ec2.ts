@@ -12,7 +12,6 @@ export interface TechHealthEC2Props {
 export class TechHealthEC2 extends Construct {
 
   public readonly ec2securityGroup: ec2.SecurityGroup;
-  public readonly outputEC2Url: cdk.CfnOutput;
 
   constructor(scope: Construct, id: string, props: TechHealthEC2Props) {
     super(scope, id);
@@ -50,8 +49,8 @@ export class TechHealthEC2 extends Construct {
     });
 
     //output the EC2 web server URL after deploy
-    this.outputEC2Url = new cdk.CfnOutput(this, 'PublicEC2Url', {
-        value: publicEC2.instancePublicDnsName,
+    new cdk.CfnOutput(this, 'PublicEC2Url', {
+        value: `http://${publicEC2.instancePublicDnsName}`,
         description: 'Public URL of the TechHealth EC2 web server',
     });
   }
