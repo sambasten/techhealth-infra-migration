@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 
 export interface TechHealthRDSProps {
     vpc: ec2.Vpc;
@@ -20,6 +21,15 @@ export class TechHealthRDS extends Construct {
     rdssecurityGroup.addIngressRule(props.ec2securityGroup, ec2.Port.tcp(3306), 'allow SQL access from ec2');
 
 
+    //secrets manager for RDS login
+    const rdsSecret = new secretsmanager.Secret(this, 'RdsSecret', {
+        generateSecretString: {
+            secretStringTemplate: JSON.stringify({ username: 'admin' }),
+            generateStringKey: 'superadminpassword',
+            excludeCharacters: '/@"',
+        }
+    })
+
     //attch RDS to private subnet
     const privateRDS = new rds.DatabaseInstance(this, 'MigrationDB', {
         vpc: props.vpc,
@@ -33,7 +43,11 @@ export class TechHealthRDS extends Construct {
         instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO),
         allocatedStorage: 20,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
-        storageEncrypted: true
+        storageEncrypted: true,
+        credentials: {
+            username: rdsSecret.secretValueFromJson('username').toString(),
+            password: rdsSecret.secretValueFromJson('superadminpassword'),
+        }
     });
   }
 }
